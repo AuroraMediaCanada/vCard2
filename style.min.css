@@ -7,6 +7,12 @@ body {
     position: relative;
 }
 
+@media (max-width: 768px) {
+    body {
+        max-width: 80vw;
+    }
+}
+
 p {
     line-height: 1.5;
     margin: 0
