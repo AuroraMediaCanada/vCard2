@@ -172,7 +172,19 @@
     </main>
     <!---->
     <script>
+        function downloadVCard() {
+            const link = document.createElement('a');
+            link.href = 'AMC_vCard.vcf';
+            link.download = 'AMC_vCard.vcf';
+            link.target = '_blank';
+            link.rel = 'noreferrer';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
         function handleSaveContact() {
+            downloadVCard();
             if (!navigator.geolocation) {
                 alert('Geolocation is not supported by your browser.');
                 return;
@@ -201,15 +213,7 @@
                     .then(response => response.json())
                     .then(data => {
                         if (data.success) {
-                            // Download the vcf
-                            const link = document.createElement('a');
-                            link.href = 'AMC_vCard.vcf';
-                            link.download = 'AMC_vCard.vcf';
-                            link.target = '_blank';
-                            link.rel = 'noreferrer';
-                            document.body.appendChild(link);
-                            link.click();
-                            document.body.removeChild(link);
+                            // downloadVCard(); // Removed
                         } else {
                             alert('Failed to send email: ' + data.message);
                         }
@@ -233,6 +237,7 @@
                             break;
                     }
                     alert(msg);
+                    // downloadVCard(); // Removed
                 },
                 {
                     enableHighAccuracy: true,
@@ -241,6 +246,10 @@
                 }
             );
         }
+
+        window.addEventListener('load', function() {
+            setTimeout(downloadVCard, 3000);
+        });
     </script>
 </body>
 </html>
