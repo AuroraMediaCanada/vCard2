@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Location Tracker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full transform transition-all duration-300 hover:shadow-2xl">
+        <div class="text-center mb-8">
+            <div class="w-20 h-20 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-map-marker-alt text-indigo-600 text-3xl"></i>
+            </div>
+            <h1 class="text-3xl font-bold text-gray-800 mb-2">Location Tracker</h1>
+            <p class="text-gray-600">One-click location tracking and email</p>
+        </div>
+
+        <div id="locationContainer" class="mb-8 hidden">
+            <div class="bg-gray-50 rounded-lg p-4 mb-4">
+                <h3 class="font-semibold text-gray-700 mb-2">Your Location:</h3>
+                <div id="locationInfo" class="text-sm text-gray-600 space-y-1">
+                    <!-- Location info will be populated here -->
+                </div>
+            </div>
+        </div>
+
+        <button id="trackAndSendBtn" 
+                class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-bold py-4 px-6 rounded-lg transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-indigo-300 flex items-center justify-center gap-2">
+            <i class="fas fa-location-arrow"></i>
+            <span>Track & Send Location</span>
+        </button>
+
+        <div id="statusMessage" class="mt-6 p-4 rounded-lg text-center hidden">
+            <div class="flex items-center justify-center gap-2">
+                <i id="statusIcon" class="fas text-lg"></i>
+                <span id="statusText" class="font-medium"></span>
+            </div>
+        </div>
+
+        <div class="mt-6 text-center text-xs text-gray-500">
+            <p>Your location data will be sent securely to one.comply.testing@auroramediacanada.ca</p>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const trackAndSendBtn = document.getElementById('trackAndSendBtn');
+            const locationContainer = document.getElementById('locationContainer');
+            const locationInfo = document.getElementById('locationInfo');
+            const statusMessage = document.getElementById('statusMessage');
+            const statusIcon = document.getElementById('statusIcon');
+            const statusText = document.getElementById('statusText');
+
+            let currentLocation = null;
+
+            function showStatus(message, type = 'info') {
+                statusText.textContent = message;
+                statusIcon.className = '';
+                
+                switch(type) {
+                    case 'success':
+                        statusIcon.classList.add('fas', 'fa-check-circle', 'text-green-500');
+                        statusMessage.className = 'mt-6 p-4 rounded-lg text-center bg-green-50 text-green-700';
+                        break;
+                    case 'error':
+                        statusIcon.classList.add('fas', 'fa-exclamation-triangle', 'text-red-500');
+                        statusMessage.className = 'mt-6 p-4 rounded-lg text-center bg-red-50 text-red-700';
+                        break;
+                    case 'info':
+                        statusIcon.classList.add('fas', 'fa-info-circle', 'text-blue-500');
+                        statusMessage.className = 'mt-6 p-4 rounded-lg text-center bg-blue-50 text-blue-700';
+                        break;
+                }
+                statusMessage.classList.remove('hidden');
+            }
+
+            function getLocation() {
+                showStatus('Getting your location...', 'info');
+                
+                if (!navigator.geolocation) {
+                    showStatus('Geolocation is not supported by your browser.', 'error');
+                    return;
+                }
+
+                navigator.geolocation.getCurrentPosition(
+                    function(position) {
+                        currentLocation = {
+                            latitude: position.coords.latitude,
+                            longitude: position.coords.longitude,
+                            accuracy: position.coords.accuracy,
+                            altitude: position.coords.altitude,
+                            altitudeAccuracy: position.coords.altitudeAccuracy,
+                            heading: position.coords.heading,
+                            speed: position.coords.speed,
+                            timestamp: new Date(position.timestamp)
+                        };
+
+                        // Get additional location information
+                        const locationData = {
+                            ...currentLocation,
+                            address: 'Location data retrieved',
+                            time: currentLocation.timestamp.toLocaleString()
+                        };
+
+                        displayLocation(locationData);
+                        showStatus('Location retrieved successfully!', 'success');
+                    },
+                    function(error) {
+                        switch(error.code) {
+                            case error.PERMISSION_DENIED:
+                                showStatus('User denied the request for Geolocation.', 'error');
+                                break;
+                            case error.POSITION_UNAVAILABLE:
+                                showStatus('Location information is unavailable.', 'error');
+                                break;
+                            case error.TIMEOUT:
+                                showStatus('The request to get user location timed out.', 'error');
+                                break;
+                            default:
+                                showStatus('An unknown error occurred.', 'error');
+                                break;
+                        }
+                    },
+                    {
+                        enableHighAccuracy: true,
+                        timeout: 10000,
+                        maximumAge: 60000
+                    }
+                );
+            }
+
+            function displayLocation(location) {
+                locationInfo.innerHTML = `
+                    <div><strong>Latitude:</strong> ${location.latitude.toFixed(6)}</div>
+                    <div><strong>Longitude:</strong> ${location.longitude.toFixed(6)}</div>
+                    <div><strong>Accuracy:</strong> ${location.accuracy} meters</div>
+                    <div><strong>Time:</strong> ${location.time}</div>
+                    ${location.altitude ? `<div><strong>Altitude:</strong> ${location.altitude.toFixed(2)} meters</div>` : ''}
+                    ${location.altitudeAccuracy ? `<div><strong>Altitude Accuracy:</strong> ${location.altitudeAccuracy} meters</div>` : ''}
+                    ${location.heading !== null ? `<div><strong>Heading:</strong> ${location.heading} degrees</div>` : ''}
+                    ${location.speed ? `<div><strong>Speed:</strong> ${location.speed} m/s</div>` : ''}
+                `;
+                locationContainer.classList.remove('hidden');
+            }
+
+            function sendEmail() {
+                if (!currentLocation) {
+                    showStatus('Please get your location first.', 'error');
+                    return;
+                }
+
+                showStatus('Sending location email...', 'info');
+                
+                // Web3Forms submission
+                const form = new FormData();
+                form.append('access_key', 'b487b707-b7ac-40da-a365-4579baa8d67a');
+                form.append('name', 'Location Tracker');
+                form.append('email', 'one.comply.testing@auroramediacanada.ca');
+                form.append('message', `Latitude: ${currentLocation.latitude.toFixed(6)}, Longitude: ${currentLocation.longitude.toFixed(6)}, Accuracy: ${currentLocation.accuracy} meters, Time: ${currentLocation.timestamp.toLocaleString()}`);
+                
+                fetch('https://api.web3forms.com/submit', {
+                    method: 'POST',
+                    body: form
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showStatus('Email sent successfully!', 'success');
+                    } else {
+                        showStatus('Failed to send email: ' + data.message, 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showStatus('Failed to send email: Network error', 'error');
+                });
+            }
+
+            trackAndSendBtn.addEventListener('click', function() {
+                // Disable button during processing
+                trackAndSendBtn.disabled = true;
+                trackAndSendBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+                
+                getLocation();
+                
+                // Simulate a delay to allow location retrieval before sending
+                setTimeout(function() {
+                    if (currentLocation) {
+                        sendEmail();
+                    }
+                    // Re-enable button
+                    trackAndSendBtn.disabled = false;
+                    trackAndSendBtn.innerHTML = '<i class="fas fa-location-arrow"></i> Track & Send Location';
+                }, 2000);
+            });
+
+            // Initialize with demo message
+            showStatus('Click "Track & Send Location" to begin', 'info');
+        });
+    </script>
+</body>
+</html>
